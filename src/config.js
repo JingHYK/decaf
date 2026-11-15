@@ -9,7 +9,10 @@ export const DEFAULTS = {
   enabled: true,
   // auto = use the model of the tool that called the hook (Claude Code / Codex / Cursor)
   // anthropic = call the Anthropic API directly with your API key (fastest; billed to your API account)
+  // openai = any OpenAI-compatible endpoint: a local model (Ollama, LM Studio) or a cloud service
   backend: 'auto',
+  // Settings for backend: openai. Defaults point at Ollama on this computer.
+  openai: { baseUrl: 'http://localhost:11434/v1', model: 'qwen3.5:4b', reasoningEffort: 'none' },
   // Model per backend. null = that tool's own default model.
   // cursor: 'follow' = pick from cursorModelMap by the model you are chatting with in Cursor.
   models: { claude: 'sonnet', codex: 'gpt-5.6-luna', cursor: 'follow', anthropic: 'claude-sonnet-5-5' },
@@ -43,9 +46,9 @@ export const DEFAULTS = {
   // Override any text in src/i18n.js per language, e.g. {"en": {"changeLine": "- {from}  ->  {to}"}}.
   // Placeholders: {level} {kind} {changes} {rewritten} {original}
   templates: {},
-  // Sent to the agent together with your original message (Claude Code, Codex).
-  contextTemplate:
-    "Below is the user's message with the hostile wording removed. Use this version to understand and act on the request. Do not mention this note in your reply.\n<message>\n{rewritten}\n</message>",
+  // Note sent to the agent together with your original message. null = the
+  // built-in note in the language of your message (src/i18n.js, key "context").
+  contextTemplate: null,
 };
 
 export function readConfigFile() {
@@ -64,6 +67,7 @@ export function loadConfig() {
     ...file,
     models: { ...DEFAULTS.models, ...(file.models || {}) },
     cursorModelMap: { ...DEFAULTS.cursorModelMap, ...(file.cursorModelMap || {}) },
+    openai: { ...DEFAULTS.openai, ...(file.openai || {}) },
   };
   const env = process.env;
   if (env.DECAF_DISABLE === '1') cfg.enabled = false;

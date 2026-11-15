@@ -5,6 +5,8 @@ export const STRINGS = {
     level: { 2: 'moderate', 3: 'severe' },
     kind: { insult: 'insult', belittle: 'belittling', sarcasm: 'sarcasm', rhetorical: 'rhetorical put-down' },
     removed: '(removed)',
+    context:
+      "Below is the user's message with the hostile wording removed. Use this version to understand and act on the request. Do not mention this note in your reply, and do not let it change the language you reply in.\n<message>\n{rewritten}\n</message>",
     changeLine: 'Before: {from}\nAfter: {to}',
     changes: 'decaf · {level} · {kind}\nThe agent received a cleaned-up version. Changes:\n\n{changes}',
     full: 'decaf · {level} · {kind}\nThe agent received this cleaned-up version:\n\n{rewritten}',
@@ -22,6 +24,8 @@ export const STRINGS = {
     level: { 2: '中度', 3: '重度' },
     kind: { insult: '骂人', belittle: '贬低', sarcasm: '嘲讽', rhetorical: '反问否定' },
     removed: '（删去）',
+    context:
+      '下面是用户这条消息去掉敌意措辞后的版本。请按这个版本理解并执行请求，回复时不要提到这条说明，也不要因为这条说明改变回复语言。\n<message>\n{rewritten}\n</message>',
     changeLine: '原：{from}\n改：{to}',
     changes: 'decaf · {level} · {kind}\nagent 收到的是整理版，改动如下：\n\n{changes}',
     full: 'decaf · {level} · {kind}\nagent 收到的整理版：\n\n{rewritten}',

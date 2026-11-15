@@ -30,6 +30,7 @@ test('Claude Code / Codex: cleaned version goes to the agent, without extra inst
   mock(hostile);
   const out = await runHook({ prompt: P }, { cfg: cfg() });
   const ctx = out.hookSpecificOutput.additionalContext;
+  assert.match(ctx, /^下面是用户这条消息去掉敌意措辞后的版本/);
   assert.match(ctx, /<message>\n我要的是倒序，不是正序。\n<\/message>/);
   assert.doesNotMatch(ctx, /道歉|整理后的需求|情绪/);
   assert.equal(out.systemMessage, 'decaf · 重度 · 骂人\nagent 收到的是整理版，改动如下：\n\n原：你是猪吗，\n改：（删去）');

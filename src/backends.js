@@ -34,6 +34,19 @@ export function readApiKey() {
 
 export const SET_KEY_CMD = `node "${join(dirname(fileURLToPath(import.meta.url)), '..', 'bin', 'decaf.js')}" set-key`;
 
+// OpenAI-compatible endpoints (local: Ollama, LM Studio; or a cloud service).
+// Local servers need no key; for a cloud service the key comes from
+// OPENAI_API_KEY or `decaf set-key openai`.
+export const OPENAI_KEY_PATH = () => join(DECAF_HOME, 'openai-key');
+export function readOpenAIKey() {
+  if (process.env.OPENAI_API_KEY) return process.env.OPENAI_API_KEY;
+  try {
+    return readFileSync(OPENAI_KEY_PATH(), 'utf8').trim() || null;
+  } catch {
+    return null;
+  }
+}
+
 // Thinking and effort for API mode. Default: adaptive thinking at medium effort,
 // which in our eval was as fast as thinking off (median 1.8 s) and more accurate.
 // apiThinking false = thinking off where the model allows it.
@@ -205,6 +218,40 @@ const backends = {
     if (!cfg.usage) return text;
     const u = r.usage || {};
     return { text, usage: { model, input: u.input_tokens, cacheRead: u.cache_read_input_tokens, cacheWrite: u.cache_creation_input_tokens, output: u.output_tokens } };
+  },
+
+  // Any OpenAI-compatible chat endpoint. Same three settings for every server:
+  // address (baseUrl), model name, and a key if the server needs one.
+  async openai(system, input, cfg) {
+    const o = cfg.openai || {};
+    if (!o.baseUrl || !o.model) throw new Error('set openai.baseUrl and openai.model');
+    const key = readOpenAIKey();
+    const body = {
+      model: o.model,
+      messages: [{ role: 'system', content: system }, { role: 'user', content: input }],
+      temperature: 0,
+      stream: false,
+      ...(o.reasoningEffort ? { reasoning_effort: o.reasoningEffort } : {}),
+    };
+    let res;
+    try {
+      res = await fetch(`${o.baseUrl.replace(/\/$/, '')}/chat/completions`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', ...(key ? { authorization: `Bearer ${key}` } : {}) },
+        body: JSON.stringify(body),
+        signal: AbortSignal.timeout(cfg.timeoutMs),
+      });
+    } catch (e) {
+      throw new Error(e.name === 'TimeoutError' ? `timeout after ${cfg.timeoutMs}ms` : `cannot reach ${o.baseUrl} (is the server running?)`);
+    }
+    const txt = await res.text();
+    if (!res.ok) throw new Error(`${o.baseUrl} answered ${res.status}: ${txt.slice(0, 200)}`);
+    const j = JSON.parse(txt);
+    // Some local models put their reasoning in <think> tags inside the answer.
+    const text = String(j.choices?.[0]?.message?.content || '').replace(/<think>[\s\S]*?<\/think>/g, '');
+    if (!cfg.usage) return text;
+    const u = j.usage || {};
+    return { text, usage: { model: o.model, input: u.prompt_tokens, output: u.completion_tokens } };
   },
 
   async codex(system, input, cfg) {

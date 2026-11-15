@@ -60,7 +60,7 @@ export async function runHook(input, { cfg = loadConfig(), host = detectHost(inp
   if (r.action !== 'rewrite') return pass;
 
   const v = vars(r, prompt, S);
-  const additional_context = fill(cfg.contextTemplate, v);
+  const additional_context = fill(cfg.contextTemplate || S.context, v);
   if (host === 'cursor') {
     if (cfg.cursorMode === 'block') return { continue: false, user_message: fill(S.cursorBlock, v) };
     if (cfg.display !== 'silent') notify(fill(S.notifyTitle, v), r.changes.map((c) => `${c.from} → ${c.to || S.removed}`).join('\n'));
