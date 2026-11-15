@@ -96,7 +96,7 @@ All results below were measured on macOS.
 |---|---|---|---|---|
 | Claude Code | ✅ | ✅ interactive and `claude -p` | A notice in the conversation | about 6 s |
 | Codex | ✅ | ✅ interactive and `codex exec` | A notice in the conversation and a macOS notification | about 11 s |
-| Cursor | ✅ | ✅ interactive; ❌ `agent -p` (Cursor does not run prompt hooks there) | A macOS notification (Cursor shows a hook's message in the chat only when the hook blocks the message, see `cursorMode`) | about 9 s when nothing needs changing, longer when it rewrites |
+| Cursor | ✅ | ✅ interactive (`agent`); ❌ one-shot `agent -p`, which Cursor runs without prompt hooks (checked with Cursor CLI 2026.11.11) | A macOS notification (Cursor shows a hook's message in the chat only when the hook blocks the message, see `cursorMode`) | about 9 s when nothing needs changing, longer when it rewrites |
 
 ### Claude Code
 
