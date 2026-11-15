@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { runHook } from '../src/hook.js';
 import { check } from '../src/check.js';
-import { TOKEN_PATH, API_KEY_PATH, findClaude, run, callModel } from '../src/backends.js';
+import { TOKEN_PATH, API_KEY_PATH, OPENAI_KEY_PATH, findClaude, run, callModel } from '../src/backends.js';
 import { DECAF_HOME, CONFIG_PATH, loadConfig, setConfig } from '../src/config.js';
 import { mkdirSync, writeFileSync, chmodSync } from 'node:fs';
 
@@ -13,7 +13,8 @@ Usage:
   decaf config                   Show the current settings
   decaf config set <key> <value> Change a setting, e.g. decaf config set models.claude opus
   decaf set-token                Save the subscription token from \`claude setup-token\` (Claude Code only)
-  decaf set-key                  Save an Anthropic API key for API mode (backend: anthropic)
+  decaf set-key                  Save an Anthropic API key (backend: anthropic)
+  decaf set-key openai           Save a key for an OpenAI-compatible API (backend: openai)
 
 Settings file: ~/.decaf/config.json`;
 
@@ -81,32 +82,41 @@ async function setToken() {
   }
 }
 
-async function setKey() {
-  const key = (process.stdin.isTTY
-    ? await promptHidden('Paste your Anthropic API key (input is hidden), then press Enter: ')
-    : await readStdin()
-  ).replace(/\s+/g, '');
-  if (!/^sk-ant-[A-Za-z0-9_-]{20,}$/.test(key)) {
-    console.error(`That does not look like an Anthropic API key (length ${key.length}; it should start with sk-ant-). Nothing was saved.`);
+// decaf set-key            -> Anthropic API key (backend: anthropic)
+// decaf set-key openai     -> key for the OpenAI-compatible API in openai.baseUrl (backend: openai)
+async function setKey(provider) {
+  const openai = provider === 'openai';
+  if (provider && !openai) {
+    console.error(`Unknown provider "${provider}". Use: decaf set-key (Anthropic) or decaf set-key openai`);
     process.exit(1);
   }
+  const name = openai ? 'API key for your OpenAI-compatible provider' : 'Anthropic API key';
+  const key = (process.stdin.isTTY ? await promptHidden(`Paste your ${name} (input is hidden), then press Enter: `) : await readStdin()).replace(/\s+/g, '');
+  const ok = openai ? key.length >= 20 : /^sk-ant-[A-Za-z0-9_-]{20,}$/.test(key);
+  if (!ok) {
+    console.error(`That does not look like an ${name} (length ${key.length}${openai ? '' : '; it should start with sk-ant-'}). Nothing was saved.`);
+    process.exit(1);
+  }
+  const path = openai ? OPENAI_KEY_PATH() : API_KEY_PATH();
+  const envVar = openai ? 'OPENAI_API_KEY' : 'ANTHROPIC_API_KEY';
+  const backend = openai ? 'openai' : 'anthropic';
   mkdirSync(DECAF_HOME, { recursive: true });
-  writeFileSync(API_KEY_PATH(), key + '\n', { mode: 0o600 });
-  chmodSync(API_KEY_PATH(), 0o600);
-  console.log(`Saved to ${API_KEY_PATH()} (length ${key.length})`);
-  process.stdout.write('Verifying the key with a test request…');
+  writeFileSync(path, key + '\n', { mode: 0o600 });
+  chmodSync(path, 0o600);
+  console.log(`Saved to ${path} (length ${key.length})`);
   const cfg = loadConfig();
-  const saved = process.env.ANTHROPIC_API_KEY;
-  delete process.env.ANTHROPIC_API_KEY; // test the saved key, not one from the shell
+  process.stdout.write(`Verifying the key with a test request${openai ? ` to ${cfg.openai.baseUrl} (model ${cfg.openai.model})` : ''}…`);
+  const saved = process.env[envVar];
+  delete process.env[envVar]; // test the saved key, not one from the shell
   try {
-    await callModel('anthropic', 'Reply with exactly: OK', 'OK?', { ...cfg, timeoutMs: 60000 });
+    await callModel(backend, 'Reply with exactly: OK', 'OK?', { ...cfg, timeoutMs: 60000 });
     console.log(' ✔ Key works.');
-    if (cfg.backend !== 'anthropic') console.log('To use API mode, run: decaf config set backend anthropic');
+    if (cfg.backend !== backend) console.log(`To use it, run: decaf config set backend ${backend}`);
   } catch (e) {
     console.log(` ✘ Verification failed: ${e.message}`);
     process.exit(1);
   } finally {
-    if (saved !== undefined) process.env.ANTHROPIC_API_KEY = saved;
+    if (saved !== undefined) process.env[envVar] = saved;
   }
 }
 
@@ -134,7 +144,7 @@ async function main() {
   } else if (cmd === 'set-token') {
     await setToken();
   } else if (cmd === 'set-key') {
-    await setKey();
+    await setKey(args[0]);
   } else {
     console.log(HELP);
   }

@@ -21,7 +21,7 @@ const base = loadConfig();
 const BACKEND = arg('backend', 'claude');
 const MODEL = arg('model', BACKEND === 'openai' ? base.openai.model : base.models[BACKEND]);
 const cfgFor = (backend, model) => ({ ...base, backend, models: { ...base.models, [backend]: model }, timeoutMs: 180000,
-  ...(backend === 'openai' ? { openai: { ...base.openai, model, ...(arg('reasoning') ? { reasoningEffort: arg('reasoning') === 'off' ? undefined : arg('reasoning') } : {}) } } : {}),
+  ...(backend === 'openai' ? { openai: { ...base.openai, ...(arg('base-url') ? { baseUrl: arg('base-url') } : {}), model, ...(arg('reasoning') ? { reasoningEffort: arg('reasoning') === 'off' ? undefined : arg('reasoning') } : {}) } } : {}),
   ...(arg('api-thinking') ? { apiThinking: arg('api-thinking') === 'on' } : {}), ...(arg('api-effort') ? { apiEffort: arg('api-effort') } : {}) });
 const GRADER = arg('grader', 'opus');
 const OUT = join(here, 'private');

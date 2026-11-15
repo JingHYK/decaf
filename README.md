@@ -40,10 +40,10 @@ To send one message untouched, start it with `[raw]`. To turn decaf off for a wh
 
 | | Default | API mode |
 |---|---|---|
-| What runs the check | The model and login of the tool you already use | Claude, through the Anthropic API, with your own key |
-| Extra account | None | An Anthropic API account with credit, separate from a Claude subscription |
+| What runs the check | The model and login of the tool you already use | Claude (Anthropic API) or GPT (OpenAI API), with your own key |
+| Extra account | None | An Anthropic or OpenAI API account with credit, separate from a Claude or ChatGPT subscription |
 | Extra wait per message (median) | 6–11 s, depending on the tool | about 2 s in every tool |
-| Cost | Your plan's included usage | About $0.70 per 1,000 messages at list price |
+| Cost | Your plan's included usage | About $0.70 (Claude) or $0.50 (GPT) per 1,000 messages at list price |
 | Setup | Install only (Claude Code also needs a token, see [Install](#claude-code)) | Install, then the steps under [API mode](#api-mode) |
 
 ### Default mode
@@ -56,22 +56,32 @@ Which model runs the check:
 
 ### API mode
 
-Instead of going through your tool, decaf calls Claude Sonnet 5.5 through the Anthropic API with your own key. It works the same in Claude Code, Codex and Cursor. Other API providers are not supported yet.
+Instead of going through your tool, decaf calls a model API directly with your own key. It works the same in Claude Code, Codex and Cursor. Two providers are tested:
 
-To turn it on:
+| | Anthropic | OpenAI |
+|---|---|---|
+| Model | Claude Sonnet 5.5 | GPT-5.6 Luna, low reasoning effort |
+| Get a key | [Claude Console](https://platform.claude.com) | [OpenAI Platform](https://platform.openai.com/api-keys) |
+| Save the key | `decaf set-key` | `decaf set-key openai` |
+| Turn it on | `decaf config set backend anthropic` | `decaf config set backend openai` |
 
-1. **You**: create an API key in the [Claude Console](https://platform.claude.com) (API Keys).
-2. **You**: run `decaf set-key` in a terminal and paste the key (input is hidden). decaf checks the key with one test request and stores it in `~/.decaf/anthropic-key`, readable only by you. If `ANTHROPIC_API_KEY` is set, decaf uses that instead, but apps opened from the Dock do not see variables from your shell profile, so the saved key is the reliable option.
-3. Run `decaf config set backend anthropic`.
+1. **You**: create an API key with the provider (the account needs credit).
+2. **You**: run the `set-key` command in a terminal and paste the key (input is hidden). decaf checks the key with one test request and stores it in `~/.decaf/`, readable only by you. If `ANTHROPIC_API_KEY` or `OPENAI_API_KEY` is set, decaf uses that instead, but apps opened from the Dock do not see variables from your shell profile, so the saved key is the reliable option.
+3. Run the `config set backend` command.
 
-To go back: `decaf config set backend auto`. Other settings: `models.anthropic` (default `claude-sonnet-5-5`), `apiThinking` (default `true`), `apiEffort` (default `medium`).
+To go back: `decaf config set backend auto`.
+
+Other settings:
+
+- Anthropic: `models.anthropic` (default `claude-sonnet-5-5`), `apiThinking` (default `true`), `apiEffort` (default `medium`).
+- OpenAI: `openai.model` (default `gpt-5.6-luna`), `openai.reasoningEffort` (default `low`), `openai.baseUrl` (default `https://api.openai.com/v1`). Another provider with an OpenAI-compatible API can be used by changing `openai.baseUrl` and `openai.model`; we have only tested OpenAI.
 
 ### How well it works
 
-We tested decaf on 14 English and 52 Chinese messages, a mix of hostile ones and ones that should be left alone (criticism of the work, quoted phrases, genuine questions, normal requests). Each message was checked twice in every mode, and the rewrites were reviewed by a second model. In both modes and all three tools:
+We tested decaf on 14 English and 52 Chinese messages, a mix of hostile ones and ones that should be left alone (criticism of the work, quoted phrases, genuine questions, normal requests). Each message was checked twice in every mode, and the rewrites were reviewed by a second model. In default mode in all three tools, and in API mode with both providers:
 
 - **Hostile messages** were caught every time in Chinese and in 10 to 12 of 12 runs in English, depending on the tool.
-- **Messages that should be left alone** were almost never changed: no mistakes in default mode, and in API mode one borderline complaint in the Chinese set.
+- **Messages that should be left alone** were almost never changed: no mistakes in default mode, and in API mode the same borderline complaint in the Chinese set with both providers.
 - **Rewrites** kept the request and facts in almost every case. Most removed all the hostile wording; the rest left some in.
 
 ## Install
@@ -153,7 +163,7 @@ decaf config set display full           # show the full cleaned-up version in th
 decaf config set language en            # always show notices in English
 ```
 
-- `backend`: `auto` (default; use the tool that called the hook), `anthropic` (API mode), or `claude` / `codex` / `cursor`
+- `backend`: `auto` (default; use the tool that called the hook), `anthropic` or `openai` (API mode), or `claude` / `codex` / `cursor`
 - `display`: `changes` (before/after for each change, default), `full`, `both`, or `silent`
 - `language`: `auto` (follow your message, default), `en`, `zh`. Notices exist in English and Chinese; other languages fall back to English.
 - `templates`: override any notice text per language, e.g. `{"en": {"changeLine": "- {from} -> {to}"}}`. Placeholders: `{level}` `{kind}` `{changes}` `{rewritten}` `{original}`. Defaults are in `src/i18n.js`.
@@ -164,8 +174,8 @@ decaf config set language en            # always show notices in English
 
 ## Privacy
 
-- **Where your message goes**: to the model of the tool you are using, through that tool's own CLI and login; in API mode, to the Anthropic API with your key. decaf sends it nowhere else.
-- **What is stored on your computer**: your settings, the Claude token (Claude Code in default mode only) or API key (API mode only), and the result of each check for about 20 minutes (in `~/.decaf/inflight/`, so the same message is not checked twice). Nothing else by default.
+- **Where your message goes**: to the model of the tool you are using, through that tool's own CLI and login; in API mode, to the Anthropic or OpenAI API with your key. decaf sends it nowhere else.
+- **What is stored on your computer**: your settings, the Claude token (Claude Code in default mode only) or API keys (API mode only), and the result of each check for about 20 minutes (in `~/.decaf/inflight/`, so the same message is not checked twice). Nothing else by default.
 - **The tools' own history**: Codex and Claude Code are run in a mode that saves no session. The Cursor CLI always saves a chat; decaf runs it in its own empty workspace and deletes those chats after 5 minutes.
 
 ## Limitations

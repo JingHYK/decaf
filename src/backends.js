@@ -191,7 +191,7 @@ const backends = {
   // start-up and no agent instructions, so it is several times faster.
   async anthropic(system, input, cfg) {
     const apiKey = readApiKey();
-    if (!apiKey) throw Object.assign(new Error('no Anthropic API key'), { code: 'NO_API_KEY' });
+    if (!apiKey) throw Object.assign(new Error('no Anthropic API key'), { code: 'NO_API_KEY', provider: 'Anthropic', cmd: SET_KEY_CMD });
     const { default: Anthropic } = await import('../vendor/anthropic-sdk.mjs');
     const client = new Anthropic({ apiKey, maxRetries: 1, timeout: cfg.timeoutMs });
     const model = cfg.models.anthropic;
@@ -208,7 +208,7 @@ const backends = {
       });
     } catch (e) {
       if (e instanceof Anthropic.AuthenticationError || e instanceof Anthropic.PermissionDeniedError) {
-        throw Object.assign(new Error('Anthropic API key rejected'), { code: 'NO_API_KEY' });
+        throw Object.assign(new Error('Anthropic API key rejected'), { code: 'NO_API_KEY', provider: 'Anthropic', cmd: SET_KEY_CMD });
       }
       throw e;
     }
@@ -226,10 +226,12 @@ const backends = {
     const o = cfg.openai || {};
     if (!o.baseUrl || !o.model) throw new Error('set openai.baseUrl and openai.model');
     const key = readOpenAIKey();
+    const noKey = (msg) => Object.assign(new Error(msg), { code: 'NO_API_KEY', provider: 'OpenAI-compatible', cmd: `${SET_KEY_CMD} openai` });
+    const local = /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])[:/]/.test(o.baseUrl);
+    if (!key && !local) throw noKey('no API key for ' + o.baseUrl);
     const body = {
       model: o.model,
       messages: [{ role: 'system', content: system }, { role: 'user', content: input }],
-      temperature: 0,
       stream: false,
       ...(o.reasoningEffort ? { reasoning_effort: o.reasoningEffort } : {}),
     };
@@ -245,6 +247,7 @@ const backends = {
       throw new Error(e.name === 'TimeoutError' ? `timeout after ${cfg.timeoutMs}ms` : `cannot reach ${o.baseUrl} (is the server running?)`);
     }
     const txt = await res.text();
+    if (res.status === 401 || res.status === 403) throw noKey(`API key rejected by ${o.baseUrl}`);
     if (!res.ok) throw new Error(`${o.baseUrl} answered ${res.status}: ${txt.slice(0, 200)}`);
     const j = JSON.parse(txt);
     // Some local models put their reasoning in <think> tags inside the answer.

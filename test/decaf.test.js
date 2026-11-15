@@ -201,3 +201,43 @@ test('API mode: missing key gives the exact set-key command; low-latency params 
   assert.deepEqual(apiParams('claude-sonnet-5-5', off), { thinking: { type: 'between_tools' }, output_config: { effort: 'low' } });
   assert.deepEqual(apiParams('claude-opus-5-5', off), { output_config: { effort: 'low' } });
 });
+
+test('OpenAI-compatible API: missing or rejected key names set-key openai; request sends no temperature', async () => {
+  const { createServer } = await import('node:http');
+  const { SET_KEY_CMD } = await import('../src/backends.js');
+  const saved = process.env.OPENAI_API_KEY;
+  delete process.env.OPENAI_API_KEY;
+  const oai = (baseUrl) => cfg({ backend: 'openai', openai: { baseUrl, model: 'm', reasoningEffort: 'none' } });
+
+  const noKey = await runHook({ prompt: 'Make the button blue.' }, { cfg: oai('https://api.example.invalid/v1') });
+  assert.match(noKey.systemMessage, /^decaf · Not checked: no working OpenAI-compatible API key/);
+  assert.ok(noKey.systemMessage.includes(`${SET_KEY_CMD} openai`));
+
+  let body;
+  const server = createServer((req, res) => {
+    let b = '';
+    req.on('data', (c) => (b += c));
+    req.on('end', () => {
+      body = JSON.parse(b);
+      if (req.headers.authorization !== 'Bearer good-key-0123456789abcdef') { res.writeHead(401); return res.end('{}'); }
+      res.writeHead(200, { 'content-type': 'application/json' });
+      res.end(JSON.stringify({ choices: [{ message: { content: '<think>x</think>' + JSON.stringify(hostile) } }] }));
+    });
+  });
+  await new Promise((r) => server.listen(0, '127.0.0.1', r));
+  const url = `http://127.0.0.1:${server.address().port}/v1`;
+  try {
+    process.env.OPENAI_API_KEY = 'bad-key-0123456789abcdef';
+    const bad = await runHook({ prompt: 'Make the header red.' }, { cfg: oai(url) });
+    assert.match(bad.systemMessage, /OpenAI-compatible API key/);
+    assert.equal(body.model, 'm'); // the request really reached the server
+    process.env.OPENAI_API_KEY = 'good-key-0123456789abcdef';
+    const good = await runHook({ prompt: P }, { cfg: oai(url) });
+    assert.match(good.hookSpecificOutput.additionalContext, /我要的是倒序，不是正序。/);
+    assert.equal('temperature' in body, false);
+    assert.equal(body.reasoning_effort, 'none');
+  } finally {
+    server.close();
+    if (saved !== undefined) process.env.OPENAI_API_KEY = saved; else delete process.env.OPENAI_API_KEY;
+  }
+});

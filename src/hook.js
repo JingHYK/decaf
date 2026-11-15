@@ -54,7 +54,7 @@ export async function runHook(input, { cfg = loadConfig(), host = detectHost(inp
   if (r.action === 'error') {
     if (!cfg.showErrors || host === 'cursor') return pass; // Cursor shows messages only when blocking
     if (r.code === 'NO_TOKEN') return { systemMessage: fill(S.noToken, { cmd: SET_TOKEN_CMD }) };
-    if (r.code === 'NO_API_KEY') return { systemMessage: fill(S.noApiKey, { cmd: SET_KEY_CMD }) };
+    if (r.code === 'NO_API_KEY') return { systemMessage: fill(S.noApiKey, { cmd: r.cmd || SET_KEY_CMD, provider: r.provider || 'Anthropic' }) };
     return { systemMessage: fill(S.error, { error: r.error.slice(0, 80) }) };
   }
   if (r.action !== 'rewrite') return pass;

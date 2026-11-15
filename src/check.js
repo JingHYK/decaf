@@ -65,7 +65,7 @@ export async function check(text, { cfg = loadConfig(), host } = {}) {
     const rewrite = r.severity >= cfg.minSeverity && r.rewritten && r.rewritten !== text.trim();
     out = { action: rewrite ? 'rewrite' : 'pass', ...r, ms: Date.now() - t0 };
   } catch (e) {
-    out = { action: 'error', error: e.message, ...(e.code ? { code: e.code } : {}), raw: String(e.raw || '').slice(0, 500), ms: Date.now() - t0 };
+    out = { action: 'error', error: e.message, ...(e.code ? { code: e.code } : {}), ...(e.cmd ? { cmd: e.cmd, provider: e.provider } : {}), raw: String(e.raw || '').slice(0, 500), ms: Date.now() - t0 };
   }
   const backend = pickBackend(cfg, host);
   log(cfg, { original: text, backend, model: modelFor(cfg, backend) || 'default', ...(cfg.chatModel ? { chatModel: cfg.chatModel } : {}), ...out });

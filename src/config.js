@@ -9,10 +9,10 @@ export const DEFAULTS = {
   enabled: true,
   // auto = use the model of the tool that called the hook (Claude Code / Codex / Cursor)
   // anthropic = call the Anthropic API directly with your API key (fastest; billed to your API account)
-  // openai = any OpenAI-compatible endpoint: a local model (Ollama, LM Studio) or a cloud service
+  // openai = OpenAI's API, or another service with an OpenAI-compatible API (change baseUrl and model)
   backend: 'auto',
-  // Settings for backend: openai. Defaults point at Ollama on this computer.
-  openai: { baseUrl: 'http://localhost:11434/v1', model: 'qwen3.5:4b', reasoningEffort: 'none' },
+  // Settings for backend: openai. Defaults: OpenAI's API with GPT-5.6 Luna at low reasoning effort.
+  openai: { baseUrl: 'https://api.openai.com/v1', model: 'gpt-5.6-luna', reasoningEffort: 'low' },
   // Model per backend. null = that tool's own default model.
   // cursor: 'follow' = pick from cursorModelMap by the model you are chatting with in Cursor.
   models: { claude: 'sonnet', codex: 'gpt-5.6-luna', cursor: 'follow', anthropic: 'claude-sonnet-5-5' },
