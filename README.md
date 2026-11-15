@@ -42,7 +42,7 @@ To send one message untouched, start it with `[raw]`. To turn decaf off for a wh
 |---|---|---|
 | What runs the check | The model and login of the tool you already use | Claude (Anthropic API) or GPT (OpenAI API), with your own key |
 | Extra account | None | An Anthropic or OpenAI API account with credit, separate from a Claude or ChatGPT subscription |
-| Extra wait per message (median) | 6–11 s, depending on the tool | about 2 s in every tool |
+| Extra wait per message (median) | 6–11 s, depending on the tool | about 2–3 s in every tool |
 | Cost | Your plan's included usage | About $0.70 (Claude) or $0.50 (GPT) per 1,000 messages at list price |
 | Setup | Install only (Claude Code also needs a token, see [Install](#claude-code)) | Install, then the steps under [API mode](#api-mode) |
 
@@ -95,7 +95,7 @@ All results below were measured on macOS.
 | Tool | Desktop app | CLI | What you see when a message is changed | Extra wait per message, default mode (median) |
 |---|---|---|---|---|
 | Claude Code | ✅ | ✅ interactive and `claude -p` | A notice in the conversation | about 6 s |
-| Codex | ✅ | ✅ interactive and `codex exec` | A notice in the conversation and a macOS notification | about 11 s |
+| Codex | ✅ | ✅ interactive and `codex exec` | A macOS notification | about 11 s |
 | Cursor | ✅ | ✅ interactive (`agent`); ❌ one-shot `agent -p`, which Cursor runs without prompt hooks (checked with Cursor CLI 2026.11.11) | A macOS notification (Cursor shows a hook's message in the chat only when the hook blocks the message, see `cursorMode`) | about 9 s when nothing needs changing, longer when it rewrites |
 
 ### Claude Code
@@ -175,7 +175,7 @@ decaf config set language en            # always show notices in English
 ## Privacy
 
 - **Where your message goes**: to the model of the tool you are using, through that tool's own CLI and login; in API mode, to the Anthropic or OpenAI API with your key. decaf sends it nowhere else.
-- **What is stored on your computer**: your settings, the Claude token (Claude Code in default mode only) or API keys (API mode only), and the result of each check for about 20 minutes (in `~/.decaf/inflight/`, so the same message is not checked twice). Nothing else by default.
+- **What is stored on your computer**: your settings, the Claude token (Claude Code in default mode only) or API keys (API mode only), and the result of each check, including the cleaned-up text, for about 20 minutes (in `~/.decaf/inflight/`, so the same message is not checked twice). Nothing else by default.
 - **The tools' own history**: Codex and Claude Code are run in a mode that saves no session. The Cursor CLI always saves a chat; decaf runs it in its own empty workspace and deletes those chats after 5 minutes.
 
 ## Limitations
