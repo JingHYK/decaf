@@ -60,6 +60,10 @@ export function run(bin, args, { input, timeoutMs, env, cwd }) {
       if (code === 0) resolve(out);
       else reject(new Error(`${bin} exited ${code}: ${(err || out).trim().slice(0, 300)}`));
     });
+    // The child may exit before reading its input (e.g. a login failure); the
+    // write then fails with EPIPE, which must not crash the hook. The exit code
+    // and stderr are reported through 'close' above.
+    child.stdin.on('error', () => {});
     child.stdin.end(input ?? '');
   });
 }
