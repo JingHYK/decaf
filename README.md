@@ -27,7 +27,7 @@ All results below were measured on macOS.
 |---|---|---|---|---|
 | Claude Code | ✅ | ✅ interactive and `claude -p` | A notice in the conversation | about 6 s |
 | Codex | ✅ | ✅ interactive and `codex exec` | A notice in the conversation and a macOS notification | about 11 s |
-| Cursor | ✅ | ✅ interactive; ❌ `agent -p` (Cursor does not run prompt hooks there) | A macOS notification (Cursor shows hook messages only when it blocks) | about 9 s when nothing needs changing, longer when it rewrites |
+| Cursor | ✅ | ✅ interactive, with `~/.cursor/hooks.json` (see Install); ❌ `agent -p` (Cursor does not run prompt hooks there) | A macOS notification (Cursor shows hook messages only when it blocks) | about 9 s when nothing needs changing, longer when it rewrites |
 
 Every message waits for the check, including ones that need no change. If the check fails or times out, the message is sent as is.
 
@@ -115,7 +115,16 @@ Codex runs a new hook only after you approve it: `/hooks` in the CLI, or Setting
 
 Install and log in to the Cursor CLI (`agent`) first; decaf uses it to call Cursor's model.
 
-If the Claude Code plugin above is installed, you are done: Cursor (desktop app and interactive CLI) also runs Claude Code plugin hooks. Otherwise, clone the repo, copy `cursor/hooks.json` to `~/.cursor/hooks.json` (or merge it into yours) and fix the path. Doing both is harmless: decaf notices when it runs twice for the same message and checks it only once.
+- **Desktop app**: if the Claude Code plugin above is installed, you are done; the Cursor desktop app also runs Claude Code plugin hooks.
+- **CLI, or no Claude Code plugin**: clone the repo, copy `cursor/hooks.json` to `~/.cursor/hooks.json` (or merge it into yours) and fix the path. Cursor's CLI runs no hooks at all unless this file exists, even with the Claude Code plugin installed.
+
+Doing both is harmless: decaf notices when it runs twice for the same message and checks it only once.
+
+## Updating
+
+- **Claude Code**: `claude plugin marketplace update decaf-marketplace`, then `claude plugin update decaf@decaf-marketplace`, then start a new session.
+- **Codex**: update the plugin from the plugin browser (or `codex plugin add decaf@decaf-marketplace`), then **approve the hook again** (`/hooks` in the CLI, or Settings > Hooks). Codex does not run a hook whose plugin changed until you approve it, so until then your messages go through unchecked.
+- **Cursor with `~/.cursor/hooks.json`**: `git pull` in your clone.
 
 ## Using it
 
