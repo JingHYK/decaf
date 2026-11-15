@@ -17,6 +17,9 @@ const PRICE = {
   'gpt-6-luna': { in: 0.1, read: 0.01, out: 0.5 },
   'gpt-5.6-luna': { in: 0.2, read: 0.02, out: 1.2 },
   'gpt-5.6-terra': { in: 2, read: 0.2, out: 12 },
+  // API mode (Anthropic API, 1-hour cache writes at 2x input)
+  'claude-sonnet-5-5': { in: 2, read: 0.1, write: 4, out: 10 },
+  'claude-haiku-5-5': { in: 0.1, read: 0.01, write: 0.2, out: 0.5 },
   'composer-2.5': { in: 0.5, read: 0.2, out: 2.5 },
   'grok-4.7-low': { in: 2, read: 0.5, out: 6 },
   'gpt-5.3-codex-low': { in: 1.75, read: 0.175, out: 14 },

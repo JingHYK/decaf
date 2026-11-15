@@ -17,7 +17,7 @@ What it's for:
 - **Fewer wasted turns.** Less of the agent's reply goes to apologising or defending itself, more to the work.
 - **No change to how you talk.** You type as usual; your original message is still sent, you see what was changed, and you can skip the check for any message.
 
-decaf uses **the model and login of the tool you already use**. No extra account or API key.
+By default decaf uses **the model and login of the tool you already use**: no extra account or API key. If you have an Anthropic API key, [API mode](#api-mode-faster) cuts the wait to about 2 seconds.
 
 ## Supported tools
 
@@ -49,7 +49,27 @@ How well the default models do on our 52-message test set (Chinese messages, eac
 
 English messages were checked on a smaller set (14 made-up messages, each run twice). No normal message, quote or genuine question was changed by mistake on any tool. Codex caught all 12 hostile runs; Claude Code and Cursor caught 10 of 12, both missing a message that opened with a bare "Useless.", which they read as a judgment of the result. All rewrites kept every key point except two in Codex, and one Cursor rewrite left a hostile phrase in.
 
-**Claude Code gives the best experience**: shortest wait, most accurate rewrites, and the notice appears right in the conversation.
+**Claude Code gives the best experience**: shortest wait, most accurate rewrites, and the notice appears right in the conversation. For the shortest wait in any tool, use API mode.
+
+## API mode (faster)
+
+Instead of going through your tool's CLI, decaf can call the Anthropic API directly with your own API key. It works the same in Claude Code, Codex and Cursor.
+
+| | Default (your tool's login) | API mode |
+|---|---|---|
+| Extra wait per message (median) | 6–11 s | about 2 s |
+| Account | The subscription or plan you already have | An Anthropic API account with credit ([platform.claude.com](https://platform.claude.com)), separate from a Claude subscription |
+| Cost | Uses your plan's included usage | About $0.70 per 1,000 messages (Claude Sonnet 5.5, list price, measured on our test set) |
+
+On the same tests, API mode (Claude Sonnet 5.5, adaptive thinking at medium effort) caught 28/28 hostile Chinese messages and 10/12 English ones, changed 2 of 58 normal Chinese messages by mistake (both times the same borderline complaint) and none of the English ones, and left nothing hostile in 86% of Chinese and all English rewrites.
+
+To turn it on:
+
+1. **You**: create an API key at [platform.claude.com](https://platform.claude.com) (API Keys).
+2. **You**: run `decaf set-key` in a terminal and paste the key (input is hidden). decaf checks the key with one test request and stores it in `~/.decaf/anthropic-key`, readable only by you. If `ANTHROPIC_API_KEY` is set, decaf uses that instead, but apps opened from the Dock do not see variables from your shell profile, so the saved key is the reliable option.
+3. Run `decaf config set backend anthropic`.
+
+To go back: `decaf config set backend auto`. Other settings: `models.anthropic` (default `claude-sonnet-5-5`), `apiThinking` (default `true`), `apiEffort` (default `medium`).
 
 ## Requirements
 
@@ -68,7 +88,7 @@ claude plugin marketplace add JingHYK/decaf
 claude plugin install decaf@decaf-marketplace --scope user
 ```
 
-Claude Code hooks cannot reuse the app's login, so decaf needs a subscription token:
+Claude Code hooks cannot reuse the app's login, so decaf needs a subscription token (skip this if you use [API mode](#api-mode-faster)):
 
 1. **You**: run `claude setup-token` in a terminal, log in in the browser, and copy the token it prints last. The token is a secret; do not paste it to the agent.
 2. **You**: run `node ~/.claude/plugins/cache/decaf-marketplace/decaf/<version>/bin/decaf.js set-token` and paste the token. It is stored in `~/.decaf/claude-token`, readable only by you. To revoke it, delete that file.
@@ -123,13 +143,13 @@ decaf config set language en            # always show notices in English
 - `contextTemplate`: the note attached for the agent
 - `cursorMode`: `context` (default: send, attach the cleaned-up version) or `block` (hold the message back and show a suggested version to copy and resend)
 - `models.cursor`: `follow` (default) picks from `cursorModelMap` by your Cursor chat model (substring match, first wins; `default` covers the rest)
-- `backend`: `auto` (default; use the tool that called the hook), or `claude` / `codex` / `cursor`
+- `backend`: `auto` (default; use the tool that called the hook), `anthropic` (API mode), or `claude` / `codex` / `cursor`
 - `log`: `false` (default). Set to `true` to write each check, message text included, to `~/.decaf/log.jsonl` when troubleshooting.
 
 ## Privacy
 
-- **Where your message goes**: to the model of the tool you are using, through that tool's own CLI and login. decaf sends it nowhere else.
-- **What is stored on your computer**: your settings, the Claude token (Claude Code only), and the result of each check for about 20 minutes (in `~/.decaf/inflight/`, so the same message is not checked twice). Nothing else by default.
+- **Where your message goes**: to the model of the tool you are using, through that tool's own CLI and login; in API mode, to the Anthropic API with your key. decaf sends it nowhere else.
+- **What is stored on your computer**: your settings, the Claude token (Claude Code only) or API key (API mode only), and the result of each check for about 20 minutes (in `~/.decaf/inflight/`, so the same message is not checked twice). Nothing else by default.
 - **The tools' own history**: Codex and Claude Code are run in a mode that saves no session. The Cursor CLI always saves a chat; decaf runs it in its own empty workspace and deletes those chats after 5 minutes.
 
 ## Limitations

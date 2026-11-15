@@ -18,6 +18,33 @@ export const TOKEN_PATH = () => join(DECAF_HOME, 'claude-token');
 export const SET_TOKEN_CMD = `node "${join(dirname(fileURLToPath(import.meta.url)), '..', 'bin', 'decaf.js')}" set-token`;
 const AUTH_ERROR = /authenticat|not logged in|log ?in|oauth|401|credential/i;
 
+export const API_KEY_PATH = () => join(DECAF_HOME, 'anthropic-key');
+
+// API mode key: ANTHROPIC_API_KEY, else the file written by `decaf set-key`.
+// Apps started from the Dock do not read shell profiles, so the file is what
+// hooks in desktop apps usually rely on.
+export function readApiKey() {
+  if (process.env.ANTHROPIC_API_KEY) return process.env.ANTHROPIC_API_KEY;
+  try {
+    return readFileSync(API_KEY_PATH(), 'utf8').trim() || null;
+  } catch {
+    return null;
+  }
+}
+
+export const SET_KEY_CMD = `node "${join(dirname(fileURLToPath(import.meta.url)), '..', 'bin', 'decaf.js')}" set-key`;
+
+// Thinking and effort for API mode. Default: adaptive thinking at medium effort,
+// which in our eval was as fast as thinking off (median 1.8 s) and more accurate.
+// apiThinking false = thinking off where the model allows it.
+export function apiParams(model, { apiThinking = true, apiEffort = 'medium' } = {}) {
+  const output_config = { effort: apiEffort };
+  if (apiThinking) return { output_config };
+  if (/sonnet-5-5/.test(model)) return { thinking: { type: 'between_tools' }, output_config };
+  if (/haiku-5-5/.test(model)) return { thinking: { type: 'disabled' }, output_config };
+  return { output_config };
+}
+
 export function readClaudeToken() {
   if (process.env.CLAUDE_CODE_OAUTH_TOKEN) return null; // already in env, inherited by child
   try {
@@ -145,6 +172,39 @@ const backends = {
     const j = JSON.parse(out);
     const [model, u] = Object.entries(j.modelUsage || {})[0] || [];
     return { text: j.result, usage: { model, input: u?.inputTokens, cacheRead: u?.cacheReadInputTokens, cacheWrite: u?.cacheCreationInputTokens, output: u?.outputTokens, listCostUSD: j.total_cost_usd } };
+  },
+
+  // API mode: calls the Anthropic API directly with the user's API key. No CLI
+  // start-up and no agent instructions, so it is several times faster.
+  async anthropic(system, input, cfg) {
+    const apiKey = readApiKey();
+    if (!apiKey) throw Object.assign(new Error('no Anthropic API key'), { code: 'NO_API_KEY' });
+    const { default: Anthropic } = await import('../vendor/anthropic-sdk.mjs');
+    const client = new Anthropic({ apiKey, maxRetries: 1, timeout: cfg.timeoutMs });
+    const model = cfg.models.anthropic;
+    let r;
+    try {
+      r = await client.messages.create({
+        model,
+        max_tokens: 4000,
+        // The instructions are the same on every call; caching them for an hour
+        // keeps calls fast between messages.
+        system: [{ type: 'text', text: system, cache_control: { type: 'ephemeral', ttl: '1h' } }],
+        messages: [{ role: 'user', content: input }],
+        ...apiParams(model, cfg),
+      });
+    } catch (e) {
+      if (e instanceof Anthropic.AuthenticationError || e instanceof Anthropic.PermissionDeniedError) {
+        throw Object.assign(new Error('Anthropic API key rejected'), { code: 'NO_API_KEY' });
+      }
+      throw e;
+    }
+    // A declined request is treated like any other failure: the message is sent as is.
+    if (r.stop_reason === 'refusal') throw new Error('model declined to check this message');
+    const text = r.content.filter((b) => b.type === 'text').map((b) => b.text).join('');
+    if (!cfg.usage) return text;
+    const u = r.usage || {};
+    return { text, usage: { model, input: u.input_tokens, cacheRead: u.cache_read_input_tokens, cacheWrite: u.cache_creation_input_tokens, output: u.output_tokens } };
   },
 
   async codex(system, input, cfg) {

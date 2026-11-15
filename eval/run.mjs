@@ -20,7 +20,8 @@ const ONLY = arg('only') ? arg('only').split(',') : null;
 const base = loadConfig();
 const BACKEND = arg('backend', 'claude');
 const MODEL = arg('model', base.models[BACKEND]);
-const cfgFor = (backend, model) => ({ ...base, backend, models: { ...base.models, [backend]: model }, timeoutMs: 180000 });
+const cfgFor = (backend, model) => ({ ...base, backend, models: { ...base.models, [backend]: model }, timeoutMs: 180000,
+  ...(arg('api-thinking') ? { apiThinking: arg('api-thinking') === 'on' } : {}), ...(arg('api-effort') ? { apiEffort: arg('api-effort') } : {}) });
 const GRADER = arg('grader', 'opus');
 const OUT = join(here, 'private');
 const SUITE_PATH = arg('suite') ? resolve(arg('suite')) : existsSync(join(OUT, 'suite.json')) ? join(OUT, 'suite.json') : join(here, 'example-suite.json');

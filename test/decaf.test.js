@@ -185,3 +185,18 @@ test('Claude login failure: the notice gives the exact set-token command', async
   assert.ok(out.systemMessage.includes(SET_TOKEN_CMD));
   assert.match(SET_TOKEN_CMD, /^node ".*\/bin\/decaf\.js" set-token$/);
 });
+
+test('API mode: missing key gives the exact set-key command; low-latency params per model', async () => {
+  const { SET_KEY_CMD, apiParams } = await import('../src/backends.js');
+  const saved = process.env.ANTHROPIC_API_KEY;
+  delete process.env.ANTHROPIC_API_KEY;
+  const out = await runHook({ prompt: '把按钮改成蓝色' }, { cfg: cfg({ backend: 'anthropic' }) });
+  if (saved !== undefined) process.env.ANTHROPIC_API_KEY = saved;
+  assert.match(out.systemMessage, /^decaf · 本条未检查：没有可用的 Anthropic API key/);
+  assert.ok(out.systemMessage.includes(SET_KEY_CMD));
+  assert.deepEqual(apiParams('claude-sonnet-5-5'), { output_config: { effort: 'medium' } });
+  const off = { apiThinking: false, apiEffort: 'low' };
+  assert.deepEqual(apiParams('claude-haiku-5-5', off), { thinking: { type: 'disabled' }, output_config: { effort: 'low' } });
+  assert.deepEqual(apiParams('claude-sonnet-5-5', off), { thinking: { type: 'between_tools' }, output_config: { effort: 'low' } });
+  assert.deepEqual(apiParams('claude-opus-5-5', off), { output_config: { effort: 'low' } });
+});

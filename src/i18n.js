@@ -12,6 +12,8 @@ export const STRINGS = {
     cursorBlock:
       'decaf · {level} · {kind} · Not sent\n\nSuggested version (copy and resend):\n\n{rewritten}\n\nChanges:\n\n{changes}\n\nTo send a message as-is, start it with [raw].',
     error: 'decaf · Not checked ({error}). Sent as-is.',
+    noApiKey:
+      'decaf · Not checked: no working Anthropic API key. Sent as-is.\nTo fix, run this in a terminal (not in this chat) and paste your key:\n{cmd}',
     noToken:
       'decaf · Not checked: decaf cannot log in to Claude. Sent as-is.\nTo fix, run these in a terminal (not in this chat):\n1. claude setup-token\n2. {cmd}\nand paste the token that step 1 prints last.',
     notifyTitle: 'decaf · {level} · {kind} · agent got a cleaned-up version',
@@ -27,6 +29,8 @@ export const STRINGS = {
     cursorBlock:
       'decaf · {level} · {kind} · 这条没有发出\n\n建议改为（可复制后重发）：\n\n{rewritten}\n\n改动：\n\n{changes}\n\n要原样发送，在开头加 [raw] 再发。',
     error: 'decaf · 本条未检查（{error}），已原样发送',
+    noApiKey:
+      'decaf · 本条未检查：没有可用的 Anthropic API key，已原样发送。\n解决方法：在终端里（不要在这个对话里）运行下面的命令并粘贴 key：\n{cmd}',
     noToken:
       'decaf · 本条未检查：decaf 无法登录 Claude，已原样发送。\n解决方法：在终端里（不要在这个对话里）依次运行\n1. claude setup-token\n2. {cmd}\n然后粘贴第 1 步最后打印出的 token。',
     notifyTitle: 'decaf · {level} · {kind} · agent 收到的是整理版',

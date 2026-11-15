@@ -8,10 +8,11 @@ export const CONFIG_PATH = () => join(DECAF_HOME, 'config.json');
 export const DEFAULTS = {
   enabled: true,
   // auto = use the model of the tool that called the hook (Claude Code / Codex / Cursor)
+  // anthropic = call the Anthropic API directly with your API key (fastest; billed to your API account)
   backend: 'auto',
   // Model per backend. null = that tool's own default model.
   // cursor: 'follow' = pick from cursorModelMap by the model you are chatting with in Cursor.
-  models: { claude: 'sonnet', codex: 'gpt-5.6-luna', cursor: 'follow' },
+  models: { claude: 'sonnet', codex: 'gpt-5.6-luna', cursor: 'follow', anthropic: 'claude-sonnet-5-5' },
   // Cursor chat model (matched by substring, first match wins) -> lighter model decaf uses.
   // Grok and Composer are in Cursor's included usage; GPT and Claude are billed separately, so those chats keep
   // a model from the same family. 'default' covers Auto, Composer, Grok and anything else.
@@ -22,6 +23,9 @@ export const DEFAULTS = {
     default: 'cursor-grok-4.6-low',
   },
   codexReasoningEffort: 'low',
+  // API mode: let the model think before answering (slower, more accurate) and how hard.
+  apiThinking: true,
+  apiEffort: 'medium',
   timeoutMs: 55000, // hooks are given 60s by the tools
   minSeverity: 2, // 0 none, 1 mild, 2 moderate, 3 severe; act at >= this
   rawPrefix: '[raw]', // messages starting with this are sent as-is

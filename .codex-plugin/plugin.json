@@ -1,6 +1,6 @@
 {
   "name": "decaf",
-  "version": "0.5.7",
+  "version": "0.6.0",
   "description": "Spots hostility aimed at your coding agent and hands the agent a cleaned-up version of your message",
   "hooks": "./hooks/hooks.json"
 }
