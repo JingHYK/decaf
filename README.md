@@ -84,7 +84,7 @@ To go back: `decaf config set backend auto`. Other settings: `models.anthropic` 
 
 Requirements: macOS, Node.js 18 or later, and the tool you use, logged in.
 
-You can hand this section to your agent. Only the steps marked **you** need to be done by you. In the commands, `decaf` stands for `node <decaf folder>/bin/decaf.js`.
+You can hand this section to your agent. Only the steps marked **you** need to be done by you. In the commands, `decaf` stands for `node <decaf folder>/bin/decaf.js`, where the decaf folder is `~/.claude/plugins/cache/decaf-marketplace/decaf/<version>` for the Claude Code plugin, `~/.codex/plugins/cache/decaf-marketplace/decaf/<version>` for the Codex plugin, or your clone of the repo.
 
 All results below were measured on macOS.
 
@@ -112,7 +112,12 @@ If you skip these steps, or the token expires, decaf lets your messages through 
 
 ### Codex
 
-The repo is also a Codex plugin. Install it from Codex's plugin browser, or clone it (`git clone https://github.com/JingHYK/decaf.git`) and add this to `~/.codex/config.toml`:
+```bash
+codex plugin marketplace add JingHYK/decaf
+codex plugin add decaf@decaf-marketplace
+```
+
+Or clone the repo (`git clone https://github.com/JingHYK/decaf.git`) and add this to `~/.codex/config.toml`:
 
 ```toml
 [[hooks.UserPromptSubmit]]
@@ -136,7 +141,7 @@ Cursor runs these hooks without asking you to approve them. If you set up both, 
 ## Updating
 
 - **Claude Code**: `claude plugin marketplace update decaf-marketplace`, then `claude plugin update decaf@decaf-marketplace`, then start a new session.
-- **Codex**: update the plugin from the plugin browser (or `codex plugin add decaf@decaf-marketplace`), then **approve the hook again** (`/hooks` in the CLI, or Settings > Hooks). Codex does not run a hook whose plugin changed until you approve it, so until then your messages go through unchecked.
+- **Codex**: `codex plugin marketplace upgrade decaf-marketplace`, then `codex plugin add decaf@decaf-marketplace`, then **approve the hook again** (`/hooks` in the CLI, or Settings > Hooks). Codex does not run a hook whose plugin changed until you approve it, so until then your messages go through unchecked.
 - **Cursor with `~/.cursor/hooks.json`**: `git pull` in your clone. With the Claude Code plugin, update it as above.
 
 ## Settings
