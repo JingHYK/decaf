@@ -1,6 +1,6 @@
 {
   "name": "decaf",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "description": "Spots hostility aimed at your coding agent and hands the agent a cleaned-up version of your message",
   "type": "module",
   "bin": {

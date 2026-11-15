@@ -8,9 +8,9 @@ export const STRINGS = {
     context:
       "Below is the user's message with the hostile wording removed. Use this version to understand and act on the request. Do not mention this note in your reply, and do not let it change the language you reply in.\n<message>\n{rewritten}\n</message>",
     changeLine: 'Before: {from}\nAfter: {to}',
-    changes: 'decaf · {level} · {kind}\nThe agent received a cleaned-up version. Changes:\n\n{changes}',
-    full: 'decaf · {level} · {kind}\nThe agent received this cleaned-up version:\n\n{rewritten}',
-    both: 'decaf · {level} · {kind}\nThe agent received a cleaned-up version. Changes:\n\n{changes}\n\nFull version:\n\n{rewritten}',
+    changes: 'decaf · {level} · {kind}\nThe agent received a cleaned-up version. Changes:\n{changes}',
+    full: 'decaf · {level} · {kind}\nThe agent received this cleaned-up version:\n{rewritten}',
+    both: 'decaf · {level} · {kind}\nThe agent received a cleaned-up version. Changes:\n{changes}\nFull version:\n{rewritten}',
     cursorBlock:
       'decaf · {level} · {kind} · Not sent\n\nSuggested version (copy and resend):\n\n{rewritten}\n\nChanges:\n\n{changes}\n\nTo send a message as-is, start it with [raw].',
     error: 'decaf · Not checked ({error}). Sent as-is.',
@@ -27,9 +27,9 @@ export const STRINGS = {
     context:
       '下面是用户这条消息去掉敌意措辞后的版本。请按这个版本理解并执行请求，回复时不要提到这条说明，也不要因为这条说明改变回复语言。\n<message>\n{rewritten}\n</message>',
     changeLine: '原：{from}\n改：{to}',
-    changes: 'decaf · {level} · {kind}\nagent 收到的是整理版，改动如下：\n\n{changes}',
-    full: 'decaf · {level} · {kind}\nagent 收到的整理版：\n\n{rewritten}',
-    both: 'decaf · {level} · {kind}\nagent 收到的是整理版，改动如下：\n\n{changes}\n\n整理版全文：\n\n{rewritten}',
+    changes: 'decaf · {level} · {kind}\nagent 收到的是整理版，改动如下：\n{changes}',
+    full: 'decaf · {level} · {kind}\nagent 收到的整理版：\n{rewritten}',
+    both: 'decaf · {level} · {kind}\nagent 收到的是整理版，改动如下：\n{changes}\n整理版全文：\n{rewritten}',
     cursorBlock:
       'decaf · {level} · {kind} · 这条没有发出\n\n建议改为（可复制后重发）：\n\n{rewritten}\n\n改动：\n\n{changes}\n\n要原样发送，在开头加 [raw] 再发。',
     error: 'decaf · 本条未检查（{error}），已原样发送',

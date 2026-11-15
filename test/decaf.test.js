@@ -33,7 +33,7 @@ test('Claude Code / Codex: cleaned version goes to the agent, without extra inst
   assert.match(ctx, /^下面是用户这条消息去掉敌意措辞后的版本/);
   assert.match(ctx, /<message>\n我要的是倒序，不是正序。\n<\/message>/);
   assert.doesNotMatch(ctx, /道歉|整理后的需求|情绪/);
-  assert.equal(out.systemMessage, 'decaf · 重度 · 骂人\nagent 收到的是整理版，改动如下：\n\n原：你是猪吗，\n改：（删去）');
+  assert.equal(out.systemMessage, 'decaf · 重度 · 骂人\nagent 收到的是整理版，改动如下：\n原：你是猪吗，\n改：（删去）');
   unmock();
 });
 
@@ -51,7 +51,7 @@ test('Cursor: sends with context by default; block mode shows the suggestion', a
 test('display modes and custom template', async () => {
   mock(hostile);
   const p = { prompt: P };
-  assert.match((await runHook(p, { cfg: cfg({ display: 'full' }) })).systemMessage, /整理版：\n\n我要的是倒序/);
+  assert.match((await runHook(p, { cfg: cfg({ display: 'full' }) })).systemMessage, /整理版：\n我要的是倒序/);
   assert.equal((await runHook(p, { cfg: cfg({ language: 'en' }) })).systemMessage.split('\n')[0], 'decaf · severe · insult');
   assert.equal((await runHook(p, { cfg: cfg({ display: 'silent' }) })).systemMessage, undefined);
   assert.equal((await runHook(p, { cfg: cfg({ messageTemplate: '[{level}] {rewritten}' }) })).systemMessage, '[重度] 我要的是倒序，不是正序。');
@@ -122,7 +122,7 @@ test('UI language follows the message; English is the default and fallback', asy
   assert.equal(detectLang('なんでテストが落ちるの'), 'en');
   mock({ severity: 2, kind: 'rhetorical', rewritten: 'I asked you not to touch migrations.', changes: [{ from: 'Are you kidding me?', to: '' }] });
   const out = await runHook({ prompt: 'Are you kidding me? I asked you not to touch migrations.' }, { cfg: cfg() });
-  assert.equal(out.systemMessage, 'decaf · moderate · rhetorical put-down\nThe agent received a cleaned-up version. Changes:\n\nBefore: Are you kidding me?\nAfter: (removed)');
+  assert.equal(out.systemMessage, 'decaf · moderate · rhetorical put-down\nThe agent received a cleaned-up version. Changes:\nBefore: Are you kidding me?\nAfter: (removed)');
   assert.match(out.hookSpecificOutput.additionalContext, /^Below is the user's message/);
   mock('not json');
   assert.match((await runHook({ prompt: 'Are you kidding me?' }, { cfg: cfg() })).systemMessage, /^decaf · Not checked/);

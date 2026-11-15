@@ -28,7 +28,7 @@ export function detectHost(input) {
 export function vars(r, original, S) {
   const changes = r.changes
     .map((c) => S.changeLine.replace('{from}', c.from).replace('{to}', c.to || S.removed))
-    .join('\n\n');
+    .join('\n');
   return {
     level: S.level[r.severity] || String(r.severity),
     kind: S.kind[r.kind] || r.kind,
