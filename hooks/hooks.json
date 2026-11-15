@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/bin/decaf.js\" hook",
+            "timeout": 60,
+            "statusMessage": "decaf · checking message…"
+          }
+        ]
+      }
+    ]
+  }
+}

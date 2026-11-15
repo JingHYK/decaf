@@ -1,0 +1,15 @@
+{
+  "name": "decaf",
+  "version": "0.5.7",
+  "description": "Spots hostility aimed at your coding agent and hands the agent a cleaned-up version of your message",
+  "author": {
+    "name": "Jingxian Zhang"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/JingHYK/decaf",
+  "keywords": [
+    "prompt",
+    "emotion",
+    "hooks"
+  ]
+}

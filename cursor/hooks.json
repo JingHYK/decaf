@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "hooks": {
+    "beforeSubmitPrompt": [
+      { "command": "node /ABSOLUTE/PATH/TO/decaf/bin/decaf.js hook", "timeout": 60 }
+    ]
+  }
+}

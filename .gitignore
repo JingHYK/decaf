@@ -1,0 +1,4 @@
+node_modules/
+.DS_Store
+# Eval data, results and reports: they contain message text. Keep them local.
+eval/private/

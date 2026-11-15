@@ -1,0 +1,13 @@
+{
+  "name": "decaf-marketplace",
+  "owner": {
+    "name": "Jingxian Zhang"
+  },
+  "plugins": [
+    {
+      "name": "decaf",
+      "source": "./",
+      "description": "Spots hostility aimed at your coding agent and hands the agent a cleaned-up version of your message"
+    }
+  ]
+}

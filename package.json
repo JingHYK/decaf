@@ -1,0 +1,32 @@
+{
+  "name": "decaf",
+  "version": "0.5.7",
+  "description": "Spots hostility aimed at your coding agent and hands the agent a cleaned-up version of your message",
+  "type": "module",
+  "bin": {
+    "decaf": "bin/decaf.js"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "eval": "node eval/run.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "author": "Jingxian Zhang",
+  "license": "MIT",
+  "homepage": "https://github.com/JingHYK/decaf",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JingHYK/decaf.git"
+  },
+  "files": [
+    "bin",
+    "src",
+    "prompts",
+    "hooks",
+    ".claude-plugin",
+    ".codex-plugin",
+    "cursor"
+  ]
+}
