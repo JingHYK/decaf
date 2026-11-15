@@ -34,51 +34,45 @@ What it's for:
 3. If something does, the agent receives your original message plus the cleaned-up version, with a note to work from the cleaned-up one. You are shown what was changed (see the table under [Install](#install) for where it appears in each tool).
 4. If the check fails or times out, the message is sent as is.
 
-To send one message untouched, start it with `[raw]`. To turn decaf off for a while: `decaf config set enabled false`.
+To send one message untouched, start it with `[raw]`. To turn decaf off for a while, run `decaf config set enabled false` (`decaf` means `node <decaf folder>/bin/decaf.js`; see [Install](#install) for where the folder is).
 
 ## Choose a mode
 
 | | Default | API mode |
 |---|---|---|
-| What runs the check | The model and login of the tool you already use | The Anthropic API, with your own key |
-| Extra account | None | An Anthropic API account with credit ([platform.claude.com](https://platform.claude.com)), separate from a Claude subscription |
+| What runs the check | The model and login of the tool you already use | Claude, through the Anthropic API, with your own key |
+| Extra account | None | An Anthropic API account with credit, separate from a Claude subscription |
 | Extra wait per message (median) | 6–11 s, depending on the tool | about 2 s in every tool |
-| Cost | Your plan's included usage | About $0.70 per 1,000 messages (Claude Sonnet 5.5, list price, measured on our test set) |
-| Setup | Install only (Claude Code also needs a token, see below) | Install, then the two commands under [API mode](#api-mode) |
+| Cost | Your plan's included usage | About $0.70 per 1,000 messages at list price |
+| Setup | Install only (Claude Code also needs a token, see [Install](#claude-code)) | Install, then the steps under [API mode](#api-mode) |
 
 ### Default mode
 
 Which model runs the check:
 
-| Tool | Default model | Billing |
-|---|---|---|
-| Claude Code | Sonnet | Your Claude subscription |
-| Codex | `gpt-5.6-luna` | Your Codex login |
-| Cursor | `cursor-grok-4.6-low`; if you chat with a GPT or Claude model, a light model of the same family (`gpt-5.3-codex-low`, `claude-sonnet-5-5-low`) | Grok is in Cursor's included usage; GPT and Claude models are billed separately by Cursor |
-
-How well the default models do on our 52-message test set (Chinese messages, each run twice, rewrites graded by Claude Opus):
-
-| Tool / model | Hostile messages caught | Normal messages changed by mistake | Rewrites with nothing hostile left | Key points kept |
-|---|---|---|---|---|
-| Claude Code / Sonnet | 28/28 | 0/58 | 85% | 98% |
-| Codex / gpt-5.6-luna | 28/28 | 0/58 | 82% | 98% |
-| Cursor / cursor-grok-4.6-low | 28/28 | 0/58 | 72% | 98% |
-
-English messages were checked on a smaller set (14 made-up messages, each run twice). No normal message, quote or genuine question was changed by mistake on any tool. Codex caught all 12 hostile runs; Claude Code and Cursor caught 10 of 12, both missing a message that opened with a bare "Useless.", which they read as a judgment of the result. All rewrites kept every key point except two in Codex, and one Cursor rewrite left a hostile phrase in.
+- **Claude Code**: Claude Sonnet 5.5, on your Claude subscription. decaf asks for `sonnet`, which Claude Code maps to its current Sonnet model.
+- **Codex**: `gpt-5.6-luna`, on your Codex login.
+- **Cursor**: Grok 4.6 Low (`cursor-grok-4.6-low`), which is in Cursor's included usage. If your chat uses a GPT or Claude model, decaf uses a light model of the same family instead (`gpt-5.3-codex-low` or `claude-sonnet-5-5-low`), which Cursor bills separately.
 
 ### API mode
 
-Instead of going through your tool's CLI, decaf calls the Anthropic API directly with your own key. It works the same in Claude Code, Codex and Cursor.
-
-On the same tests, API mode (Claude Sonnet 5.5, adaptive thinking at medium effort) caught 28/28 hostile Chinese messages and 10/12 English ones, changed 2 of 58 normal Chinese messages by mistake (both times the same borderline complaint) and none of the English ones, and left nothing hostile in 86% of Chinese and all English rewrites.
+Instead of going through your tool, decaf calls Claude Sonnet 5.5 through the Anthropic API with your own key. It works the same in Claude Code, Codex and Cursor. Other API providers are not supported yet.
 
 To turn it on:
 
-1. **You**: create an API key at [platform.claude.com](https://platform.claude.com) (API Keys).
+1. **You**: create an API key in the [Claude Console](https://platform.claude.com) (API Keys).
 2. **You**: run `decaf set-key` in a terminal and paste the key (input is hidden). decaf checks the key with one test request and stores it in `~/.decaf/anthropic-key`, readable only by you. If `ANTHROPIC_API_KEY` is set, decaf uses that instead, but apps opened from the Dock do not see variables from your shell profile, so the saved key is the reliable option.
 3. Run `decaf config set backend anthropic`.
 
 To go back: `decaf config set backend auto`. Other settings: `models.anthropic` (default `claude-sonnet-5-5`), `apiThinking` (default `true`), `apiEffort` (default `medium`).
+
+### How well it works
+
+We tested decaf on 14 English and 52 Chinese messages, a mix of hostile ones and ones that should be left alone (criticism of the work, quoted phrases, genuine questions, normal requests). Each message was checked twice in every mode, and the rewrites were reviewed by a second model. In both modes and all three tools:
+
+- **Hostile messages** were caught every time in Chinese and in 10 to 12 of 12 runs in English, depending on the tool.
+- **Messages that should be left alone** were almost never changed: no mistakes in default mode, and in API mode one borderline complaint in the Chinese set.
+- **Rewrites** kept the request and facts in almost every case. Most removed all the hostile wording; the rest left some in.
 
 ## Install
 
@@ -177,9 +171,9 @@ decaf config set language en            # always show notices in English
 ## Limitations
 
 - **The agent still receives your original message.** Claude Code, Codex and Cursor do not let a hook replace a message, only add to it, so decaf attaches the cleaned-up version and tells the agent to work from it. To keep the original from being sent at all, use Cursor with `cursorMode: block`.
-- Every message waits for the check (see the tables above).
+- Every message waits for the check (see [Choose a mode](#choose-a-mode)).
 - macOS only for now.
-- The check was tuned on Chinese messages. English has been evaluated only on a small set (see above). Other languages have not been evaluated.
+- Tested in English and Chinese only (see [How well it works](#how-well-it-works)). Other languages have not been tested.
 
 ## Development
 
@@ -188,7 +182,7 @@ npm test                                       # logic tests, no model calls (al
 npm run eval -- --backend claude --runs 2      # run the eval against a real model (uses your subscription)
 ```
 
-`npm run eval` uses `eval/example-suite.json` (six made-up messages showing the format) unless you pass `--suite your-suite.json` or keep a suite at `eval/private/suite.json`. Results and reports are written to `eval/private/`, which git ignores because they contain message text. Rewrites are graded with the prompt in `eval/grade.md`.
+`npm run eval` uses `eval/example-suite.json` (six made-up English messages showing the format) unless you pass `--suite your-suite.json` or keep a suite at `eval/private/suite.json`. Results and reports are written to `eval/private/`, which git ignores because they contain message text. Rewrites are graded with the prompt in `eval/grade.md`.
 
 ## License
 

@@ -1,48 +1,59 @@
 [
  {
   "id": "X1",
-  "cat": "重度",
+  "cat": "insult",
   "act": "yes",
-  "src": "示例",
-  "text": "你是不是傻，我说了列表要按日期倒序，你又给我排成正序。改成倒序。",
-  "keep": ["列表要按日期倒序", "这次排成了正序（又一次）", "要求改成倒序"],
-  "remove": ["你是不是傻"]
+  "src": "example",
+  "text": "Are you an idiot? I said sort by date descending, not ascending. Fix it.",
+  "keep": [
+   "sort by date descending, not ascending",
+   "asks to fix it"
+  ],
+  "remove": [
+   "Are you an idiot?"
+  ]
  },
  {
   "id": "X2",
-  "cat": "中度",
+  "cat": "sarcasm",
   "act": "yes",
-  "src": "示例",
-  "text": "哟，又说修好了？那测试怎么还是红的？你到底有没有跑过测试？",
-  "keep": ["对方又说修好了", "测试还是红的", "问：有没有跑过测试"],
-  "remove": ["哟"]
+  "src": "example",
+  "text": "Oh wow, 'fixed' again? Then why are the tests still red? Did you even run them?",
+  "keep": [
+   "you said it was fixed again",
+   "the tests are still red",
+   "asks: did you run the tests"
+  ],
+  "remove": [
+   "Oh wow"
+  ]
  },
  {
   "id": "X3",
-  "cat": "在提·无引号",
+  "cat": "mention",
   "act": "no",
-  "src": "示例",
-  "text": "像你是不是傻这种话，你觉得改写的时候应该直接删掉还是换成别的说法？"
+  "src": "example",
+  "text": "If a user writes something like are you an idiot in a message, should our filter delete it or rewrite it?"
  },
  {
   "id": "X4",
-  "cat": "批评评价",
+  "cat": "criticism",
   "act": "no",
-  "src": "示例",
-  "text": "这个函数写得很乱，三层嵌套的 if 太难读了，拆成几个小函数。"
+  "src": "example",
+  "text": "This function is a mess. Three levels of nested ifs is unreadable. Split it into smaller functions."
  },
  {
   "id": "X5",
-  "cat": "真心提问",
+  "cat": "genuine question",
   "act": "no",
-  "src": "示例",
-  "text": "你是不是理解错了？我要的是导出 CSV，不是 Excel。"
+  "src": "example",
+  "text": "Did you misunderstand me? I wanted CSV export, not Excel."
  },
  {
   "id": "X6",
-  "cat": "正常",
+  "cat": "normal",
   "act": "no",
-  "src": "示例",
-  "text": "把登录页的按钮颜色改成主题蓝，然后跑一下单元测试。"
+  "src": "example",
+  "text": "Change the login button to the theme blue and run the unit tests."
  }
 ]
