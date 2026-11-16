@@ -1,6 +1,4 @@
-# decaf
-
-decaf turns the heat in your messages to a coding agent into plain instructions, before the agent reads them.
+# decaf: Strips venting from your prompts before AI agents read them
 
 When you're frustrated, the message you send to Claude Code, Codex or Cursor often carries insults, sarcasm or venting alongside the actual request. The request is still in there, but the agent has to dig it out, and part of its reply tends to go to apologising instead of the work.
 
